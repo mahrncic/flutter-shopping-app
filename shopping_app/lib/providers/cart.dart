@@ -2,10 +2,22 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_complete_guide/models/cart_item.dart';
 
 class Cart with ChangeNotifier {
-  Map<String, CartItem> _items;
+  Map<String, CartItem> _items = {};
 
   Map<String, CartItem> get items {
     return {..._items};
+  }
+
+  int get itemCount {
+    return _items.length;
+  }
+
+  double get totalAmount {
+    var total = 0.0;
+    _items.forEach((cartKey, cartItem) {
+      total += cartItem.quantity * cartItem.price;
+    });
+    return total;
   }
 
   void addItem(String productId, double price, String title) {
@@ -22,11 +34,14 @@ class Cart with ChangeNotifier {
       _items.putIfAbsent(
         productId,
         () => CartItem(
-            id: DateTime.now().toString(),
-            title: title,
-            price: price,
-            quantity: 1),
+          id: DateTime.now().toString(),
+          title: title,
+          price: price,
+          quantity: 1,
+        ),
       );
     }
+
+    notifyListeners();
   }
 }

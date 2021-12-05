@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/enums/filter_options.dart';
+import 'package:flutter_complete_guide/providers/cart.dart';
+import 'package:flutter_complete_guide/screens/cart_screen.dart';
+import 'package:flutter_complete_guide/widgets/badge.dart';
 import 'package:flutter_complete_guide/widgets/products_grid.dart';
+import 'package:provider/provider.dart';
 
 class ProductsOverviewScreen extends StatefulWidget {
   @override
@@ -38,6 +42,22 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
               ),
             ],
           ),
+          Consumer<Cart>(
+            builder: (_, cart, ch) => Badge(
+              child: ch,
+              value: cart.itemCount.toString(),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.shopping_cart,
+              ),
+              onPressed: () {
+                Navigator.of(context).pushNamed(
+                  CartScreen.routeName,
+                );
+              },
+            ),
+          )
         ],
       ),
       body: ProductsGrid(_showOnlyFavorites),
