@@ -14,13 +14,36 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _imageUrlController = TextEditingController();
   final _imageUrlFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
-  var _editedProduct =
-      Product(id: null, title: '', price: 0, description: '', imageUrl: '');
+  var _editedProduct = Product(
+    id: null,
+    title: '',
+    price: 0,
+    description: '',
+    imageUrl: '',
+    isFavorite: false,
+  );
+
+  var _isInit = true;
 
   @override
   void initState() {
     _imageUrlFocusNode.addListener(_updateImageUrl);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      final productId = ModalRoute.of(context).settings.arguments as String;
+      if (productId != null) {
+        _editedProduct =
+            Provider.of<Products>(context, listen: false).findById(productId);
+
+        _imageUrlController.text = _editedProduct.imageUrl;
+        _isInit = false;
+      }
+      super.didChangeDependencies();
+    }
   }
 
   void _updateImageUrl() {
@@ -58,7 +81,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
       return;
     }
     _form.currentState.save();
-    Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+
+    if (_editedProduct.id != null) {
+      Provider.of<Products>(context, listen: false)
+          .updateProduct(_editedProduct.id, _editedProduct);
+    } else {
+      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    }
+
     Navigator.of(context).pop();
   }
 
@@ -83,6 +113,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               TextFormField(
                 decoration: InputDecoration(labelText: 'Title'),
                 textInputAction: TextInputAction.next,
+                initialValue: _editedProduct.title,
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Please enter a title.';
@@ -92,17 +123,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 },
                 onSaved: (value) {
                   _editedProduct = Product(
-                    title: value,
-                    price: _editedProduct.price,
-                    imageUrl: _editedProduct.imageUrl,
-                    id: null,
-                    description: _editedProduct.description,
-                  );
+                      title: value,
+                      price: _editedProduct.price,
+                      imageUrl: _editedProduct.imageUrl,
+                      id: _editedProduct.id,
+                      description: _editedProduct.description,
+                      isFavorite: _editedProduct.isFavorite);
                 },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Price'),
                 textInputAction: TextInputAction.next,
+                initialValue: _editedProduct.price.toString(),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value.isEmpty) {
@@ -121,18 +153,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 },
                 onSaved: (value) {
                   _editedProduct = Product(
-                    title: _editedProduct.title,
-                    price: double.parse(value),
-                    imageUrl: _editedProduct.imageUrl,
-                    id: null,
-                    description: _editedProduct.description,
-                  );
+                      title: _editedProduct.title,
+                      price: double.parse(value),
+                      imageUrl: _editedProduct.imageUrl,
+                      id: _editedProduct.id,
+                      description: _editedProduct.description,
+                      isFavorite: _editedProduct.isFavorite);
                 },
               ),
               TextFormField(
                 maxLines: 3,
                 decoration: InputDecoration(labelText: 'Description'),
                 keyboardType: TextInputType.multiline,
+                initialValue: _editedProduct.description,
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Please enter a description.';
@@ -142,12 +175,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 },
                 onSaved: (value) {
                   _editedProduct = Product(
-                    title: _editedProduct.title,
-                    price: _editedProduct.price,
-                    imageUrl: _editedProduct.imageUrl,
-                    id: null,
-                    description: value,
-                  );
+                      title: _editedProduct.title,
+                      price: _editedProduct.price,
+                      imageUrl: _editedProduct.imageUrl,
+                      id: _editedProduct.id,
+                      description: value,
+                      isFavorite: _editedProduct.isFavorite);
                 },
               ),
               Row(
@@ -199,7 +232,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           title: _editedProduct.title,
                           price: _editedProduct.price,
                           imageUrl: value,
-                          id: null,
+                          isFavorite: _editedProduct.isFavorite,
+                          id: _editedProduct.id,
                           description: _editedProduct.description,
                         );
                       },
