@@ -55,7 +55,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     final url = Uri.parse(
-        'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products.json');
+        'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products.json?auth=$authToken');
 
     try {
       final response = await http.post(
@@ -91,7 +91,7 @@ class Products with ChangeNotifier {
 
     if (prodIndex >= 0) {
       final url = Uri.parse(
-          'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products/$id.json');
+          'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
       await http.patch(
         url,
         body: json.encode({
@@ -108,7 +108,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final url = Uri.parse(
-        'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products/$id.json');
+        'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
 
     final existingProductIndex =
         _items.indexWhere((product) => product.id == id);
