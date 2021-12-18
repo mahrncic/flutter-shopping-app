@@ -8,16 +8,19 @@ import 'package:http/http.dart' as http;
 class Products with ChangeNotifier {
   List<Product> _items = [];
   final String authToken;
+  final String userId;
 
-  Products(this.authToken, this._items);
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     return [..._items];
   }
 
-  Future<void> fetchAndSetProducts() async {
-    final url = Uri.parse(
-        'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products.json?auth=$authToken');
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
+    var url = Uri.parse(
+        'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/products.json?auth=$authToken&$filterString');
 
     try {
       final response = await http.get(url);
@@ -27,6 +30,11 @@ class Products with ChangeNotifier {
         return;
       }
 
+      url = Uri.parse(
+          'https://flutter-shopping-app-8ca69-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken');
+      final favoritesResponse = await http.get(url);
+      final favoriteData = json.decode(favoritesResponse.body);
+
       extractedData.forEach((productId, productData) {
         _items.add(
           Product(
@@ -35,7 +43,8 @@ class Products with ChangeNotifier {
             description: productData['description'],
             price: productData['price'],
             imageUrl: productData['imageUrl'],
-            isFavorite: productData['isFavorite'],
+            isFavorite:
+                favoriteData == null ? false : favoriteData[productId] ?? false,
           ),
         );
       });
@@ -65,7 +74,7 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
+          'creatorId': userId,
         }),
       );
 
